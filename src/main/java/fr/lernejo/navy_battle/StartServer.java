@@ -2,6 +2,7 @@ package fr.lernejo.navy_battle;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import fr.lernejo.navy_battle.*;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -20,16 +21,13 @@ public class StartServer {
     private final Storage<ParamServer> remoteServer = new Storage<>();
 
     public final void Start(int port, String url) throws IOException {
-        localServer.set(new ParamServer(
-            UUID.randomUUID().toString(),
-            "http://localhost:" + port,
-            "OK"
-        ));
+        localServer.set(new ParamServer(UUID.randomUUID().toString(),"http://localhost:" + port, "OK"));
         if (url != null)
             new Thread(() -> this.remoteStart(url)).start();
         HttpServer serverHttp = HttpServer.create(new InetSocketAddress(port), 0);
         serverHttp.setExecutor(Executors.newSingleThreadExecutor());
         serverHttp.createContext("/ping", this::handlePing);
+        serverHttp.createContext("/api/game/start", e -> StartGame(new JsonHandler(e)));
         serverHttp.start();
     }
     private void handlePing(HttpExchange exchange) throws IOException {
@@ -47,6 +45,16 @@ public class StartServer {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Failed to start game!");
+        }
+    }
+    public void StartGame(JsonHandler jsonService) throws IOException {
+        try {
+            remoteServer.set(ParamServer.fromJSON(jsonService.getJSONObject()));
+            jsonService.sendJSON(202, localServer.get().toJSON());
+            System.out.println("Game Start");
+        } catch (Exception e) {
+            e.printStackTrace();
+            jsonService.sendString(400, e.getMessage());
         }
     }
     public JSONObject sendPOSTRequest(String url, JSONObject obj) throws IOException, InterruptedException {

@@ -10,12 +10,16 @@ public class Storage<T> {
         list.clear();
         list.add(obj);
     }
+    public void unset(){
+        list.clear();
+    }
 
     public boolean isEmpty() {
         return  list.isEmpty();
     }
 
-    public boolean isNotEmpty() {
+    public boolean isNotEmpty()
+    {
         return !isEmpty();
     }
 
@@ -25,4 +29,5 @@ public class Storage<T> {
 
         return list.get(0);
     }
+
 }
