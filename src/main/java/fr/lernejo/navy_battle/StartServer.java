@@ -42,6 +42,7 @@ public class StartServer {
     }
     public void remoteStart(String url) {
         try {
+            localMap.set(new BoardGame(true));remoteMap.set(new BoardGame(false));
             var response = sendPOSTRequest(url + "/api/game/start", this.localServer.get().toJSON());
             this.remoteServer.set(ParamServer.fromJSON(response).withURL(url));
 
@@ -53,18 +54,20 @@ public class StartServer {
     public void StartGame(JsonHandler jsonService) throws IOException {
         try {
             remoteServer.set(ParamServer.fromJSON(jsonService.getJSONObject()));
+            localMap.set(new BoardGame(true));remoteMap.set(new BoardGame(false));
             jsonService.sendJSON(202, localServer.get().toJSON());
             System.out.println("Game Start");
+            Jsonfire();
         } catch (Exception e) { e.printStackTrace();jsonService.sendString(400, e.getMessage()); }
     }
-    public void JsonhandleFire(JsonHandler jsonService) throws IOException {
-        try { String cell = jsonService.getQueryParameter("cell");
+    public void JsonhandleFire(JsonHandler jsonHandler) throws IOException {
+        try { String cell = jsonHandler.getQueryParameter("cell");
             var pos = new Hook(cell);
             var res = localMap.get().hit(pos);var response = new JSONObject();
             response.put("consequence", res.toAPI());response.put("shipLeft", localMap.get().hasShipLeft());
-            jsonService.sendJSON(200, response);
+            jsonHandler.sendJSON(200, response);
             Jsonfire();
-        } catch (Exception e) { e.printStackTrace();jsonService.sendString(400, e.getMessage()); }
+        } catch (Exception e) { e.printStackTrace();jsonHandler.sendString(400, e.getMessage()); }
     }
     public void Jsonfire() throws IOException, InterruptedException { Hook coordinates = remoteMap.get().getNextPlaceToHit();
         var response = sendGETRequest(remoteServer.get().getUrl() + "/api/game/fire?cell=" + coordinates.toString());

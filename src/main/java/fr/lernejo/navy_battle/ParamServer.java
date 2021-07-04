@@ -12,7 +12,14 @@ public class ParamServer {
     private final String url;
     private final String message;
 
-    public ParamServer(Boolean startGame) {
+    public ParamServer (){
+        super();
+        this.id = UUID.randomUUID().toString();
+        this.url = "";
+        this.message = "P";
+    }
+
+    public ParamServer(Boolean StartGame) {
         super();
         this.id = UUID.randomUUID().toString();;
         this.url = "";
