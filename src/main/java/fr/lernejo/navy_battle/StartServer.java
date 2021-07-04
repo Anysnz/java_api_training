@@ -55,30 +55,20 @@ public class StartServer {
             remoteServer.set(ParamServer.fromJSON(jsonService.getJSONObject()));
             jsonService.sendJSON(202, localServer.get().toJSON());
             System.out.println("Game Start");
-        } catch (Exception e) {
-            e.printStackTrace();
-            jsonService.sendString(400, e.getMessage());
-        }
+        } catch (Exception e) { e.printStackTrace();jsonService.sendString(400, e.getMessage()); }
     }
     public void JsonhandleFire(JsonHandler jsonService) throws IOException {
-        try {
-            String cell = jsonService.getQueryParameter("cell");
+        try { String cell = jsonService.getQueryParameter("cell");
             var pos = new Hook(cell);
             var res = localMap.get().hit(pos);var response = new JSONObject();
             response.put("consequence", res.toAPI());response.put("shipLeft", localMap.get().hasShipLeft());
             jsonService.sendJSON(200, response);
             Jsonfire();
-        } catch (Exception e) {
-            e.printStackTrace();jsonService.sendString(400, e.getMessage());
-        }
+        } catch (Exception e) { e.printStackTrace();jsonService.sendString(400, e.getMessage()); }
     }
-    public void Jsonfire() throws IOException, InterruptedException {
-        Hook coordinates = remoteMap.get().getNextPlaceToHit();
+    public void Jsonfire() throws IOException, InterruptedException { Hook coordinates = remoteMap.get().getNextPlaceToHit();
         var response = sendGETRequest(remoteServer.get().getUrl() + "/api/game/fire?cell=" + coordinates.toString());
-        if (!response.getBoolean("shipLeft")) {
-            System.out.println("I win");
-            return;
-        }
+        if (!response.getBoolean("shipLeft")) { System.out.println("I win");return; }
         var result = SetFire.fromAPI(response.getString("consequence"));
         if (result == SetFire.MISS)
             remoteMap.get().setCell(coordinates, GridCell.MISSED_FIRE);
@@ -94,8 +84,7 @@ public class StartServer {
             .POST(HttpRequest.BodyPublishers.ofString(obj.toString()))
             .build();
 
-        var response = client.send(requetePost, HttpResponse.BodyHandlers.ofString());
-        return new JSONObject(response.body());
+        var response = client.send(requetePost, HttpResponse.BodyHandlers.ofString());return new JSONObject(response.body());
     }
 
     public JSONObject sendGETRequest(String url) throws IOException, InterruptedException {
