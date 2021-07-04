@@ -1,6 +1,8 @@
 package fr.lernejo.navy_battle;
 
 
+import java.util.Objects;
+
 public class Hook {
     private final int x;
     private final int y;
@@ -15,7 +17,13 @@ public class Hook {
         this.x = x;
         this.y = y;
     }
+    public Hook(String code) {
+        if (code.length() < 2 || code.length() > 3 || !code.matches("^[A-J]([1-9]|10)$"))
+            throw new RuntimeException("The code " + code + "is invalid!");
 
+        y = Integer.parseInt(code.substring(1)) - 1;
+        x = code.charAt(0) - 'A';
+    }
 
 
     public int getX() {
@@ -45,6 +53,15 @@ public class Hook {
         Hook that = (Hook) o;
         return x == that.x && y == that.y;
     }
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
 
+
+    @Override
+    public String toString() {
+        return Character.toString('A' + x) + (y + 1);
+    }
 }
 

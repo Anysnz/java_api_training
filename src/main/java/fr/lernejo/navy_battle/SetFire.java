@@ -19,5 +19,7 @@ public enum SetFire {
 
         return res.get();
     }
-
+    public String toAPI() {
+        return apiString;
+    }
 }

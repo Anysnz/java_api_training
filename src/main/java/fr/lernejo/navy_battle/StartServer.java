@@ -30,6 +30,7 @@ public class StartServer {
         serverHttp.setExecutor(Executors.newSingleThreadExecutor());
         serverHttp.createContext("/ping", this::handlePing);
         serverHttp.createContext("/api/game/start", e -> StartGame(new JsonHandler(e)));
+        serverHttp.createContext("/api/game/fire", e -> JsonhandleFire(new JsonHandler(e)));
         serverHttp.start();
     }
     private void handlePing(HttpExchange exchange) throws IOException {
@@ -59,10 +60,21 @@ public class StartServer {
             jsonService.sendString(400, e.getMessage());
         }
     }
-    public void fire() throws IOException, InterruptedException {
+    public void JsonhandleFire(JsonHandler jsonService) throws IOException {
+        try {
+            String cell = jsonService.getQueryParameter("cell");
+            var pos = new Hook(cell);
+            var res = localMap.get().hit(pos);var response = new JSONObject();
+            response.put("consequence", res.toAPI());response.put("shipLeft", localMap.get().hasShipLeft());
+            jsonService.sendJSON(200, response);
+            Jsonfire();
+        } catch (Exception e) {
+            e.printStackTrace();jsonService.sendString(400, e.getMessage());
+        }
+    }
+    public void Jsonfire() throws IOException, InterruptedException {
         Hook coordinates = remoteMap.get().getNextPlaceToHit();
-        var response =
-            sendGETRequest(remoteServer.get().getUrl() + "/api/game/fire?cell=" + coordinates.toString());
+        var response = sendGETRequest(remoteServer.get().getUrl() + "/api/game/fire?cell=" + coordinates.toString());
         if (!response.getBoolean("shipLeft")) {
             System.out.println("I win");
             return;
