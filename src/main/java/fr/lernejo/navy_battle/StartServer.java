@@ -17,6 +17,8 @@ import java.util.concurrent.Executors;
 
 public class StartServer {
     private final HttpClient client = HttpClient.newHttpClient();
+    private final Storage<BoardGame> localMap = new Storage<>();
+    private final Storage<BoardGame> remoteMap = new Storage<>();
     private final Storage<ParamServer> localServer = new Storage<>();
     private final Storage<ParamServer> remoteServer = new Storage<>();
 
@@ -57,6 +59,21 @@ public class StartServer {
             jsonService.sendString(400, e.getMessage());
         }
     }
+    public void fire() throws IOException, InterruptedException {
+        Hook coordinates = remoteMap.get().getNextPlaceToHit();
+        var response =
+            sendGETRequest(remoteServer.get().getUrl() + "/api/game/fire?cell=" + coordinates.toString());
+        if (!response.getBoolean("shipLeft")) {
+            System.out.println("I win");
+            return;
+        }
+        var result = SetFire.fromAPI(response.getString("consequence"));
+        if (result == SetFire.MISS)
+            remoteMap.get().setCell(coordinates, GridCell.MISSED_FIRE);
+        else
+            remoteMap.get().setCell(coordinates, GridCell.SUCCESSFUL_FIRE);
+    }
+
     public JSONObject sendPOSTRequest(String url, JSONObject obj) throws IOException, InterruptedException {
         HttpRequest requetePost = HttpRequest.newBuilder()
             .uri(URI.create(url))
@@ -66,6 +83,17 @@ public class StartServer {
             .build();
 
         var response = client.send(requetePost, HttpResponse.BodyHandlers.ofString());
+        return new JSONObject(response.body());
+    }
+
+    public JSONObject sendGETRequest(String url) throws IOException, InterruptedException {
+        HttpRequest requeteGET = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .setHeader("Accept", "application/json")
+            .GET()
+            .build();
+
+        var response = client.send(requeteGET, HttpResponse.BodyHandlers.ofString());
         return new JSONObject(response.body());
     }
 }
