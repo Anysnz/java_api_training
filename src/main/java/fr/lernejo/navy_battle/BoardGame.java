@@ -75,6 +75,12 @@ public class BoardGame {
         }
         throw new RuntimeException("Error");
     }
+    private Hook bruteForceHit() { for (int i = 0; i < getWidth(); i++) {
+        for (int j = 0; j < getHeight(); j++) { if (getCell(i, j) == GridCell.EMPTY) return new Hook(i, j); }
+    }
+        throw new RuntimeException("Brute force!");
+    }
+
     public SetFire hit(Hook coordinates) { if (getCell(coordinates) != GridCell.BOAT) return SetFire.MISS;
         var first = boats.stream().filter(s -> s.contains(coordinates)).findFirst();
         assert (first.isPresent());first.get().remove(coordinates);setCell(coordinates, GridCell.SUCCESSFUL_FIRE);
@@ -87,10 +93,6 @@ public class BoardGame {
     private Hook lightHit() { while (lightHitPositions.size() > 0) {var c = lightHitPositions.remove(0); if (getCell(c) == GridCell.EMPTY) return c; }
         return null;
     }
-    private Hook bruteForceHit() { for (int i = 0; i < getWidth(); i++) {
-            for (int j = 0; j < getHeight(); j++) { if (getCell(i, j) == GridCell.EMPTY) return new Hook(i, j); }
-        }
-        throw new RuntimeException("Brute force!");
-    }
+
 
 }
